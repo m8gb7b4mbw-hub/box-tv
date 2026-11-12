@@ -1,0 +1,40 @@
+name: Construire l'appli Box TV
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Compiler l'APK
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Renommer
+        run: cp app/build/outputs/apk/release/app-release.apk box-tv.apk
+
+      - name: Publier (lien fixe pour Downloader)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Box TV v${{ github.run_number }}
+          files: box-tv.apk
+          make_latest: true

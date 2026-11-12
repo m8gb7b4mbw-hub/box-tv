@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'fr.boxtv'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'fr.boxtv'
+        minSdk 21
+        targetSdk 34
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int)
+        versionName '1.' + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    signingConfigs {
+        boxtv {
+            storeFile file('boxtv.keystore')
+            storePassword 'boxtv123'
+            keyAlias 'boxtv'
+            keyPassword 'boxtv123'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.boxtv
+        }
+        debug {
+            signingConfig signingConfigs.boxtv
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}

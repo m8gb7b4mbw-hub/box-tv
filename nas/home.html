@@ -20,6 +20,8 @@ header{display:flex;justify-content:space-between;align-items:flex-end}
 .chip svg{width:1.6rem;height:1.6rem}
 .dot{width:.8rem;height:.8rem;border-radius:50%;background:#30d158}
 .dot.off{background:#ff9f0a}
+.chip.tip{background:#ff9f0a;color:#000;font-weight:600}
+.chip.tip:focus{background:#fff;box-shadow:0 0 0 .3rem #ff9f0a}
 h2{font-size:1.7rem;font-weight:600;color:#a1a1a6;margin-bottom:1.6rem}
 /* tuiles des applis */
 .apps{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:2rem;align-items:start}
@@ -33,15 +35,15 @@ h2{font-size:1.7rem;font-weight:600;color:#a1a1a6;margin-bottom:1.6rem}
 /* affiches */
 .row{display:flex;gap:1.8rem;overflow-x:auto;scrollbar-width:none;padding:1.2rem .4rem 2rem;margin:-1.2rem -.4rem 0;scroll-behavior:smooth}
 .row::-webkit-scrollbar{display:none}
-.pc{flex:0 0 11rem;display:flex;flex-direction:column;gap:.8rem}
-.pc .ph{aspect-ratio:2/3;border-radius:1.1rem;background:#1c1c1e center/cover;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden}
+.pc{flex:0 0 auto;width:11rem;display:flex;flex-direction:column;gap:.8rem;text-align:left}
+.pc .ph{width:100%;height:16.5rem;border-radius:1.1rem;background:#1c1c1e center/cover;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden}
 .pc .ph em{position:absolute;inset:0;display:flex;align-items:flex-end;padding:.8rem;font-style:normal;font-weight:700;font-size:1.05rem}
 .pc .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pc b{font-size:1.1rem;font-weight:500;color:#d1d1d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .18s}
 .pc:focus .ph{transform:scale(1.1);box-shadow:0 0 0 .3rem #fff,0 1.6rem 3rem #000c}
 .pc:focus b{color:#fff;transform:translateY(.7rem)}
-.rc{flex:0 0 20rem}
-.rc .ph{aspect-ratio:16/9}
+.pc.rc{width:20rem}
+.pc.rc .ph{height:11.25rem}
 .bar{height:.35rem;border-radius:.3rem;background:#ffffff30;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc,#0a84ff)}
 .empty{color:#8e8e93;font-size:1.2rem;padding:1rem 0}
 footer{display:flex;gap:3rem;font-size:1.15rem;color:#8e8e93}
@@ -60,6 +62,7 @@ footer b{color:#d1d1d6;font-weight:600}
  <header>
   <div><p id="date"></p><p id="clock"></p></div>
   <div class="chips">
+   <button class="chip tip" id="tip" hidden>Démarrer la box sur Box TV : activer</button>
    <div class="chip"><i class="dot off" id="nasdot"></i><span id="nas">NAS…</span></div>
   </div>
  </header>
@@ -142,6 +145,9 @@ function openAll(){
 function closeAll(){$('#all').classList.remove('on');const t=$('[data-app="all"]');t&&focusEl(t,false)}
 window.boxBack=()=>{if($('#all').classList.contains('on')){closeAll();return true}return false};
 
+/* ---------- démarrage direct sur Box TV (accessibilité) ---------- */
+try{if(B&&B.watcher&&!B.watcher()){const t=$('#tip');t.hidden=false;t.onclick=()=>{toast('Active « Box TV : remplacer l\'accueil » puis reviens');B.accessibility()}}}catch{}
+
 /* ---------- heure ---------- */
 function tick(){const d=new Date();$('#clock').textContent=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
  const s=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});$('#date').textContent=s[0].toUpperCase()+s.slice(1)}
@@ -163,7 +169,7 @@ async function rows(){
   const pr=Object.values(st.prog||{}).filter(p=>p.d>0).sort((a,b)=>b.upd-a.upd).slice(0,10);
   if(pr.length){$('#resume').hidden=false;$('#resrow').innerHTML=pr.map(p=>`<button class="pc rc" data-resume="${esc(p.key)}"><div class="ph" style="background-image:${p.poster?`url(${px(p.poster)})`:grad(p.title)}"></div><div class="bar"><i style="width:${Math.round(p.t/p.d*100)}%"></i></div><b>${esc(p.title)}</b></button>`).join('')}}catch{}
  try{const r=await fetch('/api/x?action=get_vod_streams');const arr=await r.json();if(!Array.isArray(arr))throw 0;
-  const list=arr.sort((a,b)=>(+b.added||0)-(+a.added||0)).slice(0,16);
+  const seen=new Set(),list=arr.sort((a,b)=>(+b.added||0)-(+a.added||0)).filter(s=>{const k=clean(s.name).toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).slice(0,16);
   $('#films').innerHTML=list.map(s=>{const t=clean(s.name);return`<button class="pc" data-film="${esc(s.stream_id)}"><div class="ph" style="background-image:${grad(t)}"><em>${esc(t)}</em>${s.stream_icon?`<img loading="lazy" src="${px(s.stream_icon)}" alt="" onerror="this.remove()">`:''}</div><b>${esc(t)}</b></button>`}).join('')||'<p class="empty">Aucun film.</p>'}
  catch{$('#films').innerHTML='<p class="empty">Films indisponibles (vérifie les réglages de ton IPTV).</p>'}}
 rows();
@@ -177,7 +183,7 @@ document.addEventListener('click',e=>{
  else if(d.pkg){if(!B.launch(d.pkg))toast('Impossible d\'ouvrir cette appli')}});
 
 /* ---------- navigation à la télécommande ---------- */
-const FOC='.app,.pc';
+const FOC='.app,.pc,#tip:not([hidden])';
 const layer=()=>$('#all').classList.contains('on')?$('#all'):$('main');
 const vis=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0};
 function focusEl(e,scroll=true){if(!e)return;e.focus({preventScroll:true});

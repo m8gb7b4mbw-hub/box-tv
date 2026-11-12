@@ -150,6 +150,10 @@ html.tv #top{padding-top:calc(16px + env(safe-area-inset-top))}
 html.tv #page{padding-top:30px}
 html.tv body{padding-bottom:40px}
 html.tv .row{padding-top:18px;padding-bottom:18px}
+html.tv .hc{aspect-ratio:2.6;max-height:420px}
+html.tv .hc b{font-size:34px}
+html.tv .pc{flex-basis:150px}
+html.tv .card{max-width:900px}
 html.tv .grid{padding-top:12px}
 html.tv .pc:hover .ph{transform:none}
 html.tv .pc:focus .ph,html.tv .rc:focus .ph{transform:scale(1.1);box-shadow:0 0 0 4px #fff,0 18px 40px #000c}
@@ -512,7 +516,9 @@ $('#dls').addEventListener('click',e=>{if(e.target.id==='dls'){$('#dls').classLi
  const H=document.documentElement;
  const FOC='#tabs button,#pill button,.hc,.pc,.rc,.ch,.ch .st,.chip,.btn,.xb,h2.rt button,.ep .it,.ep button,.dl[data-lib],.dl button,.grp .r[id],.grp input,.sw i,.sinput input';
  const isTV=()=>H.classList.contains('tv');
- if(/[?&]tv=1/.test(location.search)||/Android.*(\bTV\b|AFT|BRAVIA|MIBOX|Mi ?Box|SHIELD)|GoogleTV|SmartTV|CrKey/i.test(navigator.userAgent))H.classList.add('tv');
+ if(/[?&]tv=1/.test(location.search)||/BoxTV|Android.*(\bTV\b|AFT|BRAVIA|MIBOX|Mi ?Box|SHIELD)|GoogleTV|SmartTV|CrKey/i.test(navigator.userAgent))H.classList.add('tv');
+ // sur la télé : page calculée sur 1280 px de large puis réduite à l'écran (moins « zoomé »)
+ if(isTV()&&/Android|BoxTV/i.test(navigator.userAgent)){const m=document.querySelector('meta[name=viewport]');if(m)m.content='width=1280'}
  addEventListener('touchstart',()=>H.classList.remove('tv'),{passive:true});
  const on=id=>$('#'+id).classList.contains('on');
  const root=()=>on('sheet')?$('#sheet'):on('dls')?$('#dls'):document;

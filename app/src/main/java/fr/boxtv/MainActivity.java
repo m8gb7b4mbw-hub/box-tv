@@ -299,6 +299,26 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> askUrl());
         }
 
+        /** true si le remplacement de l'accueil (accessibilité) est activé */
+        @JavascriptInterface
+        public boolean watcher() {
+            try {
+                String on = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+                return on != null && on.contains(getPackageName() + "/");
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void accessibility() {
+            try {
+                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (Exception e) {
+                openSettings();
+            }
+        }
+
         @JavascriptInterface
         public String url() {
             return homeUrl();

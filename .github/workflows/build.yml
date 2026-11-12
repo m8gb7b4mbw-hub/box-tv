@@ -3,6 +3,7 @@ name: Construire l'appli Box TV
 on:
   push:
     branches: [main]
+    paths-ignore: ['cleanyourtv-launcher/**', '.github/workflows/launcher.yml']
   workflow_dispatch:
 
 permissions:

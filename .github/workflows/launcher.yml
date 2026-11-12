@@ -1,0 +1,35 @@
+name: Construire le launcher CleanYourTV
+
+on:
+  push:
+    branches: [main]
+    paths: ['cleanyourtv-launcher/**', '.github/workflows/launcher.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Clé de signature fixe (mises à jour possibles par-dessus)
+        run: mkdir -p ~/.android && cp cleanyourtv-launcher/debug.keystore ~/.android/debug.keystore
+      - name: Compiler
+        working-directory: cleanyourtv-launcher
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon -q --console=plain
+          cp app/build/outputs/apk/release/app-release.apk ../tvhome.apk
+      - name: Publier sous un lien fixe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete launcher --yes --cleanup-tag || true
+          gh release create launcher tvhome.apk --title "Launcher CleanYourTV (build ${{ github.run_number }})" --notes "Compilé depuis cleanyourtv-launcher/" --latest=false

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pas de packageNames : il faut aussi voir les autres applis pour effacer le cadre quand on quitte Apple Music. -->
+<!-- Pas de packageNames : il faut aussi voir les autres applis pour effacer le cadre quand on quitte Apple Music.
+     Les touches sont seulement observées (jamais bloquées) : elles servent à recaler le cadre et à débloquer
+     la flèche du haut vers la barre d'onglets d'Apple Music. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeViewFocused|typeViewSelected|typeViewScrolled|typeWindowStateChanged|typeWindowsChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRetrieveInteractiveWindows"
+    android:accessibilityFlags="flagRetrieveInteractiveWindows|flagReportViewIds|flagRequestFilterKeyEvents"
+    android:canRequestFilterKeyEvents="true"
     android:canRetrieveWindowContent="true"
     android:notificationTimeout="30"
     android:description="@string/desc" />

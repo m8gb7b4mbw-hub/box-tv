@@ -1,0 +1,54 @@
+name: Construire l'appli Cadre de sélection
+
+on:
+  push:
+    branches: [main]
+    paths: ['cadre/**', '.github/workflows/cadre.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cadre
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Clé de signature (secret GitHub)
+        env:
+          KS: ${{ secrets.BOXTV_KEYSTORE_B64 }}
+        run: |
+          [ -n "$KS" ] || { echo "Secret BOXTV_KEYSTORE_B64 manquant"; exit 1; }
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/boxtv.p12"
+          echo "BOXTV_KEYSTORE=$RUNNER_TEMP/boxtv.p12" >> "$GITHUB_ENV"
+
+      - name: Compiler l'APK
+        env:
+          BOXTV_KEYSTORE_PASSWORD: ${{ secrets.BOXTV_KEYSTORE_PASSWORD }}
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Renommer
+        run: cp app/build/outputs/apk/release/app-release.apk cadre.apk
+
+      # lien fixe : .../releases/download/cadre/cadre.apk (ne remplace pas la « dernière version » de Box TV)
+      - name: Publier
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: cadre
+          name: Cadre de sélection
+          files: cadre/cadre.apk
+          make_latest: false
+          overwrite_files: true

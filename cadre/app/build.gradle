@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.application'
+}
+
+// « Cadre » : dessine un cadre blanc autour de l'élément sélectionné dans les applis
+// qui n'en affichent pas (Apple Music). Service d'accessibilité, sans écran ni réseau.
+android {
+    namespace 'fr.boxtv.cadre'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'fr.boxtv.cadre'
+        minSdk 24
+        targetSdk 34
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int)
+        versionName '1.' + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    // Clé de signature SECRÈTE fournie par la recette GitHub (comme Box TV et Mon NAS).
+    def releaseKeystore = System.getenv('BOXTV_KEYSTORE')
+    signingConfigs {
+        boxtv {
+            if (releaseKeystore) {
+                storeFile file(releaseKeystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('BOXTV_KEYSTORE_PASSWORD')
+                keyAlias 'boxtv'
+                keyPassword System.getenv('BOXTV_KEYSTORE_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig releaseKeystore ? signingConfigs.boxtv : null
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cadre de sélection</string>
+    <string name="desc">Dessine un cadre blanc autour de l\'élément sélectionné dans Apple Music, qui n\'en affiche pas à la télécommande. Ne lit ni n\'envoie aucune donnée.</string>
+</resources>

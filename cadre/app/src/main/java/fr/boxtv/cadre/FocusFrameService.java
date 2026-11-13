@@ -15,7 +15,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 /**
- * Cadre blanc autour de l'élément qui a le focus (sélection à la télécommande),
+ * Cadre bleu autour de l'élément qui a le focus (sélection à la télécommande),
  * uniquement dans les applis listées dans TARGETS. Ailleurs, le cadre est caché.
  * Ne lit aucun texte et n'envoie rien : seule la position de l'élément sélectionné est utilisée.
  */
@@ -41,7 +41,7 @@ public class FocusFrameService extends AccessibilityService {
         frame = new View(this);
         GradientDrawable d = new GradientDrawable();
         d.setColor(Color.TRANSPARENT);
-        d.setStroke(px(5), Color.WHITE);
+        d.setStroke(px(5), 0xFF0A84FF); // bleu Apple
         d.setCornerRadius(px(16));
         frame.setBackground(d);
         lp = new WindowManager.LayoutParams(1, 1,

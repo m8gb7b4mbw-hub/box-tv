@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+// « Mon NAS » : petite appli qui ouvre la page Mon NAS du serveur (dossiers, photos, vidéos).
+android {
+    namespace 'fr.boxtv.nas'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'fr.boxtv.nas'
+        minSdk 24
+        targetSdk 34
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int)
+        versionName '1.' + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    // même clé de signature que Box TV (app/boxtv.keystore à la racine du dépôt)
+    signingConfigs {
+        boxtv {
+            storeFile file('../../app/boxtv.keystore')
+            storePassword 'boxtv123'
+            keyAlias 'boxtv'
+            keyPassword 'boxtv123'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.boxtv
+        }
+        debug {
+            signingConfig signingConfigs.boxtv
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}

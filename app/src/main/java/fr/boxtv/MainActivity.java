@@ -99,6 +99,14 @@ public class MainActivity extends Activity {
         });
 
         web.setWebChromeClient(new WebChromeClient() {
+            // Pas de grand triangle gris pendant le chargement d'une vidéo
+            @Override
+            public Bitmap getDefaultVideoPoster() {
+                Bitmap b = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+                b.eraseColor(Color.TRANSPARENT);
+                return b;
+            }
+
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 fullscreenView = view;

@@ -17,14 +17,28 @@ android {
         versionName '3.4'
     }
 
+    // Clé de signature SECRÈTE (secrets GitHub BOXTV_KEYSTORE_B64 / BOXTV_KEYSTORE_PASSWORD), la même que Box TV.
+    // Sans elle, l'APK « release » n'est pas signé et la recette s'arrête.
+    def releaseKeystore = System.getenv('BOXTV_KEYSTORE')
+    signingConfigs {
+        boxtv {
+            if (releaseKeystore) {
+                storeFile file(releaseKeystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('BOXTV_KEYSTORE_PASSWORD')
+                keyAlias 'boxtv'
+                keyPassword System.getenv('BOXTV_KEYSTORE_PASSWORD')
+            }
+        }
+    }
+
     buildTypes {
         release {
             // R8 strips and optimises the code (AndroidX included): smaller APK, faster start on a slow TV CPU.
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Sideloaded over ADB, never published: sign with the debug key so it installs over a debug build.
-            signingConfig signingConfigs.debug
+            signingConfig releaseKeystore ? signingConfigs.boxtv : null
         }
     }
 

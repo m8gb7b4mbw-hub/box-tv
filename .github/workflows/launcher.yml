@@ -18,10 +18,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Clé de signature fixe (mises à jour possibles par-dessus)
-        run: mkdir -p ~/.android && cp cleanyourtv-launcher/debug.keystore ~/.android/debug.keystore
+      - name: Clé de signature (secret GitHub)
+        env:
+          KS: ${{ secrets.BOXTV_KEYSTORE_B64 }}
+        run: |
+          [ -n "$KS" ] || { echo "Secret BOXTV_KEYSTORE_B64 manquant"; exit 1; }
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/boxtv.p12"
+          echo "BOXTV_KEYSTORE=$RUNNER_TEMP/boxtv.p12" >> "$GITHUB_ENV"
       - name: Compiler
         working-directory: cleanyourtv-launcher
+        env:
+          BOXTV_KEYSTORE_PASSWORD: ${{ secrets.BOXTV_KEYSTORE_PASSWORD }}
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew

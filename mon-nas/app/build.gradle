@@ -15,23 +15,25 @@ android {
         versionName '1.' + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
     }
 
-    // même clé de signature que Box TV (app/boxtv.keystore à la racine du dépôt)
+    // Clé de signature SECRÈTE : fournie par la recette GitHub (secrets BOXTV_KEYSTORE_B64 / BOXTV_KEYSTORE_PASSWORD).
+    // Sans elle, l'APK « release » n'est pas signé et la recette s'arrête (aucun APK signé avec une mauvaise clé).
+    def releaseKeystore = System.getenv('BOXTV_KEYSTORE')
     signingConfigs {
         boxtv {
-            storeFile file('../../app/boxtv.keystore')
-            storePassword 'boxtv123'
-            keyAlias 'boxtv'
-            keyPassword 'boxtv123'
+            if (releaseKeystore) {
+                storeFile file(releaseKeystore)
+                storeType 'pkcs12'
+                storePassword System.getenv('BOXTV_KEYSTORE_PASSWORD')
+                keyAlias 'boxtv'
+                keyPassword System.getenv('BOXTV_KEYSTORE_PASSWORD')
+            }
         }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig signingConfigs.boxtv
-        }
-        debug {
-            signingConfig signingConfigs.boxtv
+            signingConfig releaseKeystore ? signingConfigs.boxtv : null
         }
     }
 

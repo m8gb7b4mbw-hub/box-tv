@@ -24,7 +24,17 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      - name: Clé de signature (secret GitHub)
+        env:
+          KS: ${{ secrets.BOXTV_KEYSTORE_B64 }}
+        run: |
+          [ -n "$KS" ] || { echo "Secret BOXTV_KEYSTORE_B64 manquant"; exit 1; }
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/boxtv.p12"
+          echo "BOXTV_KEYSTORE=$RUNNER_TEMP/boxtv.p12" >> "$GITHUB_ENV"
+
       - name: Compiler l'APK
+        env:
+          BOXTV_KEYSTORE_PASSWORD: ${{ secrets.BOXTV_KEYSTORE_PASSWORD }}
         run: gradle :app:assembleRelease --no-daemon
 
       - name: Renommer

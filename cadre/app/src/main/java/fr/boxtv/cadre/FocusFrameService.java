@@ -8,7 +8,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -90,7 +89,6 @@ public class FocusFrameService extends AccessibilityService {
     /** Observe seulement : renvoie toujours false, la touche continue vers l'appli. */
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
-        Log.d("Cadre", "key " + event.getKeyCode() + " action=" + event.getAction() + " inTarget=" + inTarget);
         if (!inTarget || event.getAction() != KeyEvent.ACTION_DOWN) return false;
         int k = event.getKeyCode();
         if (k == KeyEvent.KEYCODE_DPAD_UP || k == KeyEvent.KEYCODE_DPAD_DOWN
@@ -109,16 +107,13 @@ public class FocusFrameService extends AccessibilityService {
     /** Après un appui sur Haut : si la sélection n'a pas bougé, la placer sur l'onglet de la page affichée. */
     private void unstickUp() {
         Rect now = new Rect();
-        boolean got = haveBeforeUp && focusedBounds(now);
-        Log.d("Cadre", "up: before=" + beforeUp + " now=" + now + " got=" + got);
-        if (!got || !now.equals(beforeUp)) return;
+        if (!haveBeforeUp || !focusedBounds(now) || !now.equals(beforeUp)) return;
         if (now.top < px(30) && now.width() < px(700)) return; // déjà dans la barre du haut
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null || !MUSIC.contentEquals(String.valueOf(root.getPackageName()))) return;
         if (visible(root.findAccessibilityNodeInfosByViewId(DRAWER_ITEM))) return; // menu latéral ouvert
         List<AccessibilityNodeInfo> tabs = new ArrayList<>();
         collectTabs(root, tabs, 0);
-        Log.d("Cadre", "tabs=" + tabs.size());
         if (tabs.isEmpty()) return;
         Collections.sort(tabs, new Comparator<AccessibilityNodeInfo>() {
             public int compare(AccessibilityNodeInfo a, AccessibilityNodeInfo b) {
@@ -131,8 +126,7 @@ public class FocusFrameService extends AccessibilityService {
         for (int i = 0; i < PAGES.length; i++)
             if (visible(root.findAccessibilityNodeInfosByViewId(PAGES[i]))) { page = i; break; }
         AccessibilityNodeInfo tab = tabs.get(Math.min(page, tabs.size() - 1));
-        boolean ok = tab.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-        Log.d("Cadre", "focus tab " + page + " ok=" + ok);
+        tab.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
         scheduleRefresh();
     }
 
